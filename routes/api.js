@@ -11,7 +11,7 @@ router.get('/', (req, res) =>  {
 });
 
 router.get('/users', asyncHandler( async (req, res) => {
-    const users = await User.findAll();
+    const users = await User.findByPk(1);
     res.json({users});
 }));
 
