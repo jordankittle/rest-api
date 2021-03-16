@@ -15,6 +15,7 @@ router.get('/test-error', (req, res, next) => {
     next(error);
 });
 
+// Test SequelizeUniqueConstraintError route
 router.get('/test-constraint-error', (req, res, next) => {
     const error = new Error('This is a unique constraint test error');
     error.name = "SequelizeUniqueConstraintError";

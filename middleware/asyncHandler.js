@@ -1,3 +1,4 @@
+// Middleware to handle async calls
 exports.asyncHandler = (cb) => {
     return async(req, res, next) => {
       try {
