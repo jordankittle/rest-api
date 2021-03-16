@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { asyncHandler } = require('../middleware/asyncHandler');
-const { User } = require('../models');
+const { User, Course } = require('../models');
 const { authenticateUser } = require('../middleware/authenticateUser');
 
 
@@ -31,6 +31,38 @@ router.post('/users', asyncHandler( async (req, res) => {
             res.status(500).json({message: "An error has occured. User has not been saved"});
         }
     }
+}));
+
+// Show all courses 
+router.get('/courses', asyncHandler( async (req, res) => {
+    const courses = await Course.findAll({
+        include: [
+            {
+                model: User,
+            },
+        ],
+      });
+    res.json({courses});
+}));
+
+// Show individual course by ID
+router.get('/courses/:id', asyncHandler( async (req, res, next) => {
+    const course = await Course.findByPk(req.params.id, {
+        include: [
+            {
+                model: User,
+            }
+        ],
+    });
+    if(course){
+        res.json({course});
+    } else {
+        const error = new Error(`Course ID:${req.params.id} not found`);
+        error.status = 404;
+        next(error);
+
+    }
+    
 }));
 
 module.exports = router;
