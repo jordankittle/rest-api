@@ -16,6 +16,8 @@ const app = express();
 
 // setup morgan which gives us http request logging
 app.use(morgan('dev'));
+// express.json for body parsing
+app.use(express.json());
 
 // set up routes
 app.use('/', indexRouter);

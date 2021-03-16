@@ -22,12 +22,13 @@ router.post('/users', asyncHandler( async (req, res) => {
     let user;
     try{
         user = await User.create(req.body);
-        //res.status(201).end();    
-    } catch {
-        if(error.name === "SequelizeValidationError" || error.name === "SequelieUniqueConstraintError") {
+        res.location('/').status(201).end();    
+    } catch(error) {
+        if(error.name === "SequelizeValidationError" || error.name === "SequelizeUniqueConstraintError") {
             const errors = error.errors.map(err => err.message);
             res.status(400).json({ errors }); 
         } else {
+            console.log('got to else');
             res.status(500).json({message: "An error has occured. User has not been saved"});
         }
     }
