@@ -16,7 +16,7 @@ const app = express();
 
 // setup morgan which gives us http request logging
 app.use(morgan('dev'));
-// express.json for body parsing
+// Set up express to handle req.body parsing
 app.use(express.json());
 
 // set up routes
@@ -40,7 +40,7 @@ app.use((err, req, res, next) => {
   if(err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError") {
     const errors = err.errors.map(error => error.message);
     res.status(400).json({ errors }); 
-}
+  }
   res.status(err.status || 500).json({
     message: `Error ${err.status}: ${err.message}`,
     //error: {},
