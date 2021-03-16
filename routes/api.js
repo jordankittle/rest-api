@@ -68,15 +68,80 @@ router.post('/courses', authenticateUser, asyncHandler( async (req, res, next) =
                 const course = await Course.create(req.body);
                 res.location('/courses/' + course.id).status(201).end();
             } else {
-                res.status(400).json({message: "Owner of the course must be the authenticated user"});
+                const error = new Error('Owner of the course must be the authenticated user');
+                error.status = 400;
+                throw error;            }  
+        }
+        catch(error) {
+            next(error);
+        }
+    } else {
+        const error = new Error('User not authenticated');
+        error.status = 400;
+        throw error;
+    } 
+}));
+
+// Update a course
+router.put('/courses/:id', authenticateUser, asyncHandler( async (req, res, next) => {
+    const user = await User.findByPk(req.currentUser.id);
+    if(user){
+        try{
+            if(req.body.userId === user.id){
+                const course = await Course.findByPk(req.params.id);
+                if(course){
+                    await course.update(req.body);
+                    res.status(204).end();
+                } else {
+                    const error = new Error(`Course ID:${req.params.id} not found`);
+                    error.status = 400;
+                    throw error;  
+                }
+            } else {
+                const error = new Error('Owner of the course must be the authenticated user');
+                error.status = 400;
+                throw error;
             }  
         }
         catch(error) {
             next(error);
         }
     } else {
-        res.json({message: "No user found"});
-    } 
+        const error = new Error('User not authenticated');
+        error.status = 400;
+        throw error;
+    }     
+}));
+
+// Delete a course
+router.delete('/courses/:id', authenticateUser, asyncHandler( async (req, res, next) => {
+    const user = await User.findByPk(req.currentUser.id);
+    if(user){
+        try{
+            if(+req.params.id === user.id){
+                const course = await Course.findByPk(req.params.id);
+                if(course){
+                    await course.destroy();
+                    res.status(204).end();
+                } else {
+                    const error = new Error(`Course ID:${req.params.id} not found`);
+                    error.status = 400;
+                    throw error;  
+                }
+            } else {
+                const error = new Error('Owner of the course must be the authenticated user');
+                error.status = 400;
+                throw error;
+            }  
+        }
+        catch(error) {
+            next(error);
+        }
+    } else {
+        const error = new Error('User not authenticated');
+        error.status = 400;
+        throw error;
+    }     
 }));
 
 module.exports = router;

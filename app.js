@@ -28,7 +28,7 @@ app.use('/api', apiRouter);
 // 404 error handler
 app.use((req, res) => {
   res.status(404).json({
-    message: 'Route Not Found',
+    message: 'Route Not Found'
   });
 });
 
