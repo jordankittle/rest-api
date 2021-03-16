@@ -18,18 +18,13 @@ router.get('/users', authenticateUser, asyncHandler( async (req, res) => {
 }));
 
 // Create a new user
-router.post('/users', asyncHandler( async (req, res) => {
+router.post('/users', asyncHandler( async (req, res, next) => {
     let user;
     try{
         user = await User.create(req.body);
         res.location('/').status(201).end();    
     } catch(error) {
-        if(error.name === "SequelizeValidationError" || error.name === "SequelizeUniqueConstraintError") {
-            const errors = error.errors.map(err => err.message);
-            res.status(400).json({ errors }); 
-        } else {
-            res.status(500).json({message: "An error has occured. User has not been saved"});
-        }
+         next(error);
     }
 }));
 
@@ -62,7 +57,26 @@ router.get('/courses/:id', asyncHandler( async (req, res, next) => {
         next(error);
 
     }
-    
+}));
+
+// Create a new course
+router.post('/courses', authenticateUser, asyncHandler( async (req, res, next) => {
+    const user = await User.findByPk(req.currentUser.id);
+    if(user){
+        try{
+            if(req.body.userId === user.id){
+                const course = await Course.create(req.body);
+                res.location('/courses/' + course.id).status(201).end();
+            } else {
+                res.status(400).json({message: "Owner of the course must be the authenticated user"});
+            }  
+        }
+        catch(error) {
+            next(error);
+        }
+    } else {
+        res.json({message: "No user found"});
+    } 
 }));
 
 module.exports = router;
