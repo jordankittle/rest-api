@@ -15,4 +15,18 @@ router.get('/test-error', (req, res, next) => {
     next(error);
 });
 
+router.get('/test-constraint-error', (req, res, next) => {
+    const error = new Error('This is a unique constraint test error');
+    error.name = "SequelizeUniqueConstraintError";
+    const errors = [];
+    const testError = new Error('This is a test SequelizeUniqueConstraintError');
+    const testError1 = new Error('This is a test for one thing that went wrong');
+    const testError2 = new Error('This is a test for the second thing that went wrong');
+    const testError3 = new Error('This is a test for the third thing that went wrong');
+    errors.push(testError, testError1, testError2, testError3);
+    error.errors = errors;
+    
+    next(error);
+});
+
 module.exports = router;
