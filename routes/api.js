@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { asyncHandler } = require('../middleware/asyncHandler');
 const { User, Course } = require('../models');
+const { asyncHandler } = require('../middleware/asyncHandler');
+const { validateCourse } = require('../middleware/validate');
 const { authenticateUser } = require('../middleware/authenticateUser');
 
 
@@ -13,7 +14,8 @@ router.get('/', (req, res) =>  {
 
 // Return authenticated user
 router.get('/users', authenticateUser, asyncHandler( async (req, res) => {
-    const user = await User.findByPk(req.currentUser.id);
+    const attributes = ['id', 'firstName', 'lastName', 'emailAddress'];
+    const user = await User.findByPk(req.currentUser.id, {attributes});
     res.json({user});
 }));
 
@@ -30,24 +32,32 @@ router.post('/users', asyncHandler( async (req, res, next) => {
 
 // Show all courses 
 router.get('/courses', asyncHandler( async (req, res) => {
+    const attributes = ['title', 'description', 'estimatedTime', 'materialsNeeded', 'userId'];
+    const userAttributes = ['id', 'firstName', 'lastName', 'emailAddress'];
     const courses = await Course.findAll({
         include: [
             {
                 model: User,
+                attributes: userAttributes,
             },
         ],
+        attributes,
       });
     res.json({courses});
 }));
 
 // Show individual course by ID
 router.get('/courses/:id', asyncHandler( async (req, res, next) => {
+    const attributes = ['title', 'description', 'estimatedTime', 'materialsNeeded', 'userId'];
+    const userAttributes = ['id', 'firstName', 'lastName', 'emailAddress'];
     const course = await Course.findByPk(req.params.id, {
         include: [
             {
                 model: User,
+                attributes: userAttributes,
             }
         ],
+        attributes,
     });
     if(course){
         res.json({course});
@@ -60,7 +70,7 @@ router.get('/courses/:id', asyncHandler( async (req, res, next) => {
 }));
 
 // Create a new course
-router.post('/courses', authenticateUser, asyncHandler( async (req, res, next) => {
+router.post('/courses', authenticateUser, validateCourse, asyncHandler( async (req, res, next) => {
     const user = await User.findByPk(req.currentUser.id);
     if(user){
         try{
@@ -83,11 +93,11 @@ router.post('/courses', authenticateUser, asyncHandler( async (req, res, next) =
 }));
 
 // Update a course
-router.put('/courses/:id', authenticateUser, asyncHandler( async (req, res, next) => {
+router.put('/courses/:id', authenticateUser, validateCourse, asyncHandler( async (req, res, next) => {
     const user = await User.findByPk(req.currentUser.id);
     if(user){
         try{
-            if(req.body.userId === user.id){
+            if(+req.params.id === user.id && req.body.userId == user.id){
                 const course = await Course.findByPk(req.params.id);
                 if(course){
                     await course.update(req.body);
@@ -99,7 +109,7 @@ router.put('/courses/:id', authenticateUser, asyncHandler( async (req, res, next
                 }
             } else {
                 const error = new Error('Owner of the course must be the authenticated user');
-                error.status = 400;
+                error.status = 403;
                 throw error;
             }  
         }
@@ -130,7 +140,7 @@ router.delete('/courses/:id', authenticateUser, asyncHandler( async (req, res, n
                 }
             } else {
                 const error = new Error('Owner of the course must be the authenticated user');
-                error.status = 400;
+                error.status = 403;
                 throw error;
             }  
         }
