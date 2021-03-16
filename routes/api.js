@@ -28,7 +28,6 @@ router.post('/users', asyncHandler( async (req, res) => {
             const errors = error.errors.map(err => err.message);
             res.status(400).json({ errors }); 
         } else {
-            console.log('got to else');
             res.status(500).json({message: "An error has occured. User has not been saved"});
         }
     }
