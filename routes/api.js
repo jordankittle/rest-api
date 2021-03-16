@@ -30,13 +30,13 @@ router.post('/users', asyncHandler( async (req, res, next) => {
             const errors = err.errors.map(error => error.message);
             res.status(400).json({ errors }); 
           }
-         next(error);
+        next(error);
     }
 }));
 
 // Show all courses 
 router.get('/courses', asyncHandler( async (req, res) => {
-    const attributes = ['title', 'description', 'estimatedTime', 'materialsNeeded', 'userId'];
+    const attributes = ['id', 'title', 'description', 'estimatedTime', 'materialsNeeded', 'userId'];
     const userAttributes = ['id', 'firstName', 'lastName', 'emailAddress'];
     const courses = await Course.findAll({
         include: [
@@ -52,7 +52,7 @@ router.get('/courses', asyncHandler( async (req, res) => {
 
 // Show individual course by ID
 router.get('/courses/:id', asyncHandler( async (req, res, next) => {
-    const attributes = ['title', 'description', 'estimatedTime', 'materialsNeeded', 'userId'];
+    const attributes = ['id', 'title', 'description', 'estimatedTime', 'materialsNeeded', 'userId'];
     const userAttributes = ['id', 'firstName', 'lastName', 'emailAddress'];
     const course = await Course.findByPk(req.params.id, {
         include: [

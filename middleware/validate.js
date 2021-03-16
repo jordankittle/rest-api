@@ -7,7 +7,7 @@ exports.validateCourse = async (req, res, next) => {
         errors.push('Course description required');
     }
     if(errors.length > 0){
-        res.status(401).json({errors});
+        res.status(400).json({errors});
     } else {
         next();
     }
