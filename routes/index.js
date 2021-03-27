@@ -10,7 +10,7 @@ router.get('/', (req, res) => {
 
 //Test error route
 router.get('/test-error', (req, res, next) => {
-    const error = new Error('This is a test error');
+    const error = new Error('This is a changed test error');
     error.status = 500;
     next(error);
 });

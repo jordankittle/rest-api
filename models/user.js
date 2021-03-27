@@ -30,6 +30,9 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
+        notNull: {
+          msg: "First name is required"
+        },
         notEmpty: {
           msg: "First name is required"
         }
@@ -39,6 +42,9 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
+        notNull: {
+          msg: "Last name is required"
+        },
         notEmpty: {
           msg: "Last name is required"
         }
@@ -51,6 +57,9 @@ module.exports = (sequelize, DataTypes) => {
       },
       allowNull: false,
       validate: {
+        notNull: {
+          msg: "E-mail is required"
+        },
         notEmpty: {
           msg: "E-mail is required"
         },
@@ -63,15 +72,32 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
       set(val){
-        const hashedPassword = bcrypt.hashSync(val, 10);
-        this.setDataValue('password', hashedPassword);
+          if(val === this.confirmPassword){
+          const hashedPassword = bcrypt.hashSync(val, 10);
+          this.setDataValue('password', hashedPassword);
+        }
       },
       validate: {
+        notNull: {
+          msg: 'Password is required',
+        },
         notEmpty: {
           msg: "Password is required"
         },
       }
-    }
+    },
+    confirmPassword: {
+      type: DataTypes.VIRTUAL,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'Confirm Password is required and must match password',
+        },
+        notEmpty: {
+          msg: 'Confirm Password is required and must match password',
+        },
+      },
+    },
   }, {
     sequelize,
     modelName: 'User',

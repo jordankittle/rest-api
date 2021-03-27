@@ -1,6 +1,7 @@
 'use strict';
 
 // load modules
+const cors = require('cors');
 const express = require('express');
 const morgan = require('morgan');
 const { sequelize } = require('./models');
@@ -13,6 +14,12 @@ const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'tr
 
 // create the Express app
 const app = express();
+
+// setup CORS
+const corsOptions = {
+  exposedHeaders: ['Location']
+};
+app.use(cors(corsOptions));
 
 // setup morgan which gives us http request logging
 app.use(morgan('dev'));
@@ -39,6 +46,7 @@ app.use((err, req, res, next) => {
   }
   if(err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError") {
     const errors = err.errors.map(error => error.message);
+    console.log('sequelize error');
     res.status(400).json({ errors }); 
   }
   res.status(err.status || 500).json({

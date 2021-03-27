@@ -24,13 +24,14 @@ router.post('/users', asyncHandler( async (req, res, next) => {
     let user;
     try{
         user = await User.create(req.body);
-        res.location('/').status(201).end();    
+        return res.location('/').status(201).end();    
     } catch(err) {
         if(err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError") {
             const errors = err.errors.map(error => error.message);
-            res.status(400).json({ errors }); 
-          }
-        next(error);
+            return res.status(400).json({ errors }); 
+        }
+        console.log('calling next');
+        next(err);
     }
 }));
 
@@ -87,6 +88,7 @@ router.post('/courses', authenticateUser, validateCourse, asyncHandler( async (r
                 throw error;            }  
         }
         catch(error) {
+            error.status = 400;
             next(error);
         }
     } else {
@@ -101,7 +103,7 @@ router.put('/courses/:id', authenticateUser, validateCourse, asyncHandler( async
     const user = await User.findByPk(req.currentUser.id);
     if(user){
         try{
-            if(+req.params.id === user.id && req.body.userId == user.id){
+            if(req.body.userId === user.id){
                 const course = await Course.findByPk(req.params.id);
                 if(course){
                     await course.update(req.body);
@@ -130,23 +132,22 @@ router.put('/courses/:id', authenticateUser, validateCourse, asyncHandler( async
 // Delete a course
 router.delete('/courses/:id', authenticateUser, asyncHandler( async (req, res, next) => {
     const user = await User.findByPk(req.currentUser.id);
+    const course = await Course.findByPk(req.params.id);
     if(user){
         try{
-            if(+req.params.id === user.id){
-                const course = await Course.findByPk(req.params.id);
-                if(course){
+            const course = await Course.findByPk(req.params.id);
+            if(course){
+                if(course.userId === user.id){
                     await course.destroy();
-                    res.status(204).end();
-                } else {
-                    const error = new Error(`Course ID:${req.params.id} not found`);
-                    error.status = 400;
-                    throw error;  
+                    return res.status(204).end();
+                } else{
+                    res.status(403).json({message: "User must be course owner"});
                 }
             } else {
-                const error = new Error('Owner of the course must be the authenticated user');
-                error.status = 403;
-                throw error;
-            }  
+                const error = new Error(`Course ID:${req.params.id} not found`);
+                error.status = 400;
+                throw error;  
+            }
         }
         catch(error) {
             next(error);
